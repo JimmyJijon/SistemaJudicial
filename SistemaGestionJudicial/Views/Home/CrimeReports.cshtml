@@ -1,0 +1,301 @@
+﻿
+@{
+    ViewData["Title"] = "CrimeReports";
+}
+
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/crimereports.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+}
+
+
+    <!-- Main Content -->
+    <div class="flex-1 p-4 overflow-auto">
+        
+        <!-- Header -->
+    
+        <header class="bg-white/85 backdrop-blur-md shadow-sm py-4 px-6 flex flex-col md:flex-row md:justify-between md:items-center sticky top-0 z-10 no-print space-y-4 md:space-y-0 mb-6">
+            <!-- Título y descripción -->
+            <div>
+                <h1 class="text-xl font-semibold text-gray-800">Crime Analytics Dashboard</h1>
+                <p class="text-gray-600 text-sm">Latest crime statistics and trends</p>
+            </div>
+
+            <!-- Usuario con menú desplegable -->
+            <div class="relative flex items-center space-x-2">
+                <button id="userMenuButton" class="flex items-center space-x-2 focus:outline-none">
+                    <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span class="text-sm font-medium">
+                        @(HttpContextAccessor.HttpContext.Session.GetString("PrimerNombre") ?? "Usuario")
+                    </span>
+                    <i class="fas fa-chevron-down text-xs ml-1"></i>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div id="userDropdown" class="hidden absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-20">
+                    <a href="/Account/Logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión
+                    </a>
+                </div>
+            </div>
+        </header>
+
+
+        <!-- Quick Filters -->
+        <div class="bg-white p-4 rounded-lg mb-4">
+            <div class="flex flex-wrap gap-4">
+                <select class="p-2 border rounded">
+                    <option>Last 12 Months</option>
+                    <option>Last 30 Days</option>
+                    <option>Year to Date</option>
+                </select>
+                <select class="p-2 border rounded">
+                    <option>All Crime Types</option>
+                    <option>Violent Crimes</option>
+                    <option>Property Crimes</option>
+                </select>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded">
+                    <i class="fas fa-filter mr-2"></i> Apply
+                </button>
+            </div>
+        </div>
+
+
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="card bg-white p-4 rounded-lg">
+                <div class="flex justify-between">
+                    <div>
+                        <p class="text-gray-500">Total Crimes</p>
+                        <h3 class="text-2xl font-bold">1,842</h3>
+                    </div>
+                    <div class="text-blue-500 text-2xl">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <span class="badge badge-up">
+                        <i class="fas fa-arrow-up mr-1"></i> 12% from last month
+                    </span>
+                </div>
+            </div>
+
+            <div class="card bg-white p-4 rounded-lg">
+                <div class="flex justify-between">
+                    <div>
+                        <p class="text-gray-500">Violent Crimes</p>
+                        <h3 class="text-2xl font-bold">387</h3>
+                    </div>
+                    <div class="text-red-500 text-2xl">
+                        <i class="fas fa-skull-crossbones"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <span class="badge badge-up">
+                        <i class="fas fa-arrow-up mr-1"></i> 8% from last month
+                    </span>
+                </div>
+            </div>
+
+            <div class="card bg-white p-4 rounded-lg">
+                <div class="flex justify-between">
+                    <div>
+                        <p class="text-gray-500">Clearance Rate</p>
+                        <h3 class="text-2xl font-bold">68%</h3>
+                    </div>
+                    <div class="text-green-500 text-2xl">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <span class="badge badge-down">
+                        <i class="fas fa-arrow-down mr-1"></i> 5% improvement
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chart -->
+        @*<div class="card bg-white p-4 rounded-lg mb-4">
+            <h3 class="font-semibold mb-2">Monthly Crime Trends</h3>
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>*@
+
+        <!-- Crime Distribution -->
+        @*<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="card bg-white p-4 rounded-lg">
+                <h3 class="font-semibold mb-2">Crime Types</h3>
+                <div class="chart-container">
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card bg-white p-4 rounded-lg">
+                <h3 class="font-semibold mb-2">Top Offenses</h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span>Theft/Burglary</span>
+                        <span class="font-medium">524 cases</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Assault</span>
+                        <span class="font-medium">387 cases</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Drug Offenses</span>
+                        <span class="font-medium">321 cases</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Fraud</span>
+                        <span class="font-medium">198 cases</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+    <!-- Cases Table -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="p-3 text-left text-sm font-medium text-gray-600">Case ID</th>
+                        <th class="p-3 text-left text-sm font-medium text-gray-600">Crime Type</th>
+                        <th class="p-3 text-left text-sm font-medium text-gray-600">Date</th>
+                        <th class="p-3 text-left text-sm font-medium text-gray-600">Location</th>
+                        <th class="p-3 text-left text-sm font-medium text-gray-600">Offender(s)</th>
+                        <th class="p-3 text-left text-sm font-medium text-gray-600">Severity</th>
+                        <th class="p-3 text-left text-sm font-medium text-gray-600">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <tr>
+                        <td class="p-3 text-sm">CR-2023-1001</td>
+                        <td class="p-3 text-sm">Fraud</td>
+                        <td class="p-3 text-sm">12/05/2023</td>
+                        <td class="p-3 text-sm">123 Main St, Springfield</td>
+                        <td class="p-3 text-sm">John Doe</td>
+                        <td>
+                            <span class="status-badge active">Critical</span>
+                        </td>
+                        <td>
+                            <span class="status-badge active">Trial Ongoing</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 text-sm">CR-2023-1002</td>
+                        <td class="p-3 text-sm">Fraud</td>
+                        <td class="p-3 text-sm">22/06/2023</td>
+                        <td class="p-3 text-sm">456 Oak Ave, Rivertown</td>
+                        <td class="p-3 text-sm">Jane Smith</td>
+                        <td>
+                            <span class="status-badge closed">Medium</span>
+                        </td>
+                        <td>
+                            <span class="status-badge closed">Convicted</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="p-3 text-sm">CR-2023-1003</td>
+                        <td class="p-3 text-sm">Assault</td>
+                        <td class="p-3 text-sm">03/07/2023</td>
+                        <td class="p-3 text-sm">789 Pine St, Rivertown</td>
+                        <td class="p-3 text-sm">Robert Johnson</td>
+                        <td>
+                            <span class="status-badge pending">High</span>
+                        </td>
+                        <td>
+                            <span class="status-badge pending">In Trial</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="p-4 text-center border-t">
+            <button class="text-blue-600 hover:underline">
+                Show More Cases <i class="fas fa-chevron-down ml-1"></i>
+            </button>
+        </div>
+    </div>
+
+<script>
+    // Initialize charts
+    document.addEventListener('DOMContentLoaded', function() {
+        // Trend Chart
+        new Chart(
+            document.getElementById('trendChart'),
+            {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'Total Crimes',
+                            data: [210, 190, 220, 240, 235, 260],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            }
+        );
+
+        // Type Chart
+        new Chart(
+            document.getElementById('typeChart'),
+            {
+                type: 'doughnut',
+                data: {
+                    labels: ['Theft', 'Assault', 'Drugs', 'Fraud', 'Other'],
+                    datasets: [{
+                        data: [524, 387, 321, 198, 412],
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#ef4444',
+                            '#10b981',
+                            '#f59e0b',
+                            '#64748b'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            }
+        );
+    });
+</script>
+    <script>
+        const button = document.getElementById("userMenuButton");
+        const dropdown = document.getElementById("userDropdown");
+
+        document.addEventListener("click", (e) => {
+            if (button.contains(e.target)) {
+                dropdown.classList.toggle("hidden");
+            } else {
+                dropdown.classList.add("hidden");
+            }
+        });
+    </script>
+
